@@ -213,6 +213,14 @@ def main():
     if user_investment and investment_duration:
         recommend_policy(user_investment, investment_duration, policy_data, model_spending)
         
+        # Visualizations
+        visualize_trends(monthly_spending)
+        visualize_roi_distribution(policy_data)
+        visualize_spending_distribution(monthly_spending)
+        visualize_correlation_matrix(policy_data)
+        visualize_roi_by_horizon(policy_data)
+        visualize_spending_category_distribution(monthly_spending)
+        
 # Run the main function
 if __name__ == "__main__":
     main()
