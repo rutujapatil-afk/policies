@@ -1,0 +1,21 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+env/
+
+# VS Code
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# IDE files
+.idea/
+
+# Other IDEs (e.g., PyCharm)
+.idea/
