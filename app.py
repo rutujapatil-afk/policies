@@ -92,6 +92,19 @@ def visualize_monthly_spending_trend(monthly_spending):
         plt.xlabel("Month", fontsize=14)
         plt.ylabel("Monthly Expense ($)", fontsize=14)
         st.pyplot(plt)
+        
+        # Simple Explanation
+        st.write("""
+            **What this graph shows:**
+            This graph displays the total spending over time. The x-axis represents the months, 
+            and the y-axis shows how much was spent in each month. The color gradient shows changes 
+            in spending, with cooler tones representing lower spending and warmer tones showing higher spending. 
+            
+            **Key Takeaways:**
+            - Look for trends in the graph: are expenses rising, falling, or staying constant?
+            - Peaks may indicate months of higher-than-normal expenses, which could be useful to understand 
+              and plan for future spending.
+        """)
 
 def visualize_spending_categories(monthly_spending):
     spending_category_counts = monthly_spending['Spending Category'].value_counts().sort_values()
@@ -102,6 +115,19 @@ def visualize_spending_categories(monthly_spending):
     plt.ylabel("Spending Category", fontsize=14)
     st.pyplot(plt)
 
+    # Simple Explanation
+    st.write("""
+            **What this graph shows:**
+            This graph breaks down your monthly expenses into different categories: Low, Medium, and High. 
+            Each bar represents how many months fall into each category, indicating the frequency of 
+            that spending level. 
+            
+            **Key Takeaways:**
+            - If most of your expenses fall into the 'Medium' category, this suggests that your spending 
+              is generally moderate.
+            - If you want to save, aim to bring down the frequency of 'High' spending months.
+    """)
+
 def visualize_roi_bar(policy_data):
     plt.figure(figsize=(10, 6))
     avg_roi = policy_data.groupby('ROI Category')['Expected ROI'].mean().reset_index()
@@ -111,6 +137,18 @@ def visualize_roi_bar(policy_data):
     plt.ylabel("Average Expected ROI (%)", fontsize=14)
     st.pyplot(plt)
 
+    # Simple Explanation
+    st.write("""
+            **What this graph shows:**
+            This bar chart displays the average expected ROI (Return on Investment) for each ROI category 
+            of the policies. The categories are 'Low', 'Medium', 'High', and 'Very High'. The y-axis shows 
+            the average ROI for each category. 
+
+            **Key Takeaways:**
+            - Higher categories, such as 'High' and 'Very High', indicate policies with better returns 
+              on investment.
+            - If you want a policy with a better ROI, look for options in the 'High' or 'Very High' categories. 
+    """)
 
 def visualize_policy_comparison(top_policies):
     if not top_policies.empty:
@@ -129,6 +167,19 @@ def visualize_policy_comparison(top_policies):
         plt.ylabel("Values", fontsize=14)
         plt.legend()
         st.pyplot(plt)
+
+        # Simple Explanation
+        st.write("""
+            **What this graph shows:**
+            This bar chart compares the top 3 policies based on their Expected ROI, Investment Horizon, 
+            and Potential Return. Each policy is represented by three bars: one for ROI, one for Horizon, 
+            and one for Potential Return.
+
+            **Key Takeaways:**
+            - The higher the ROI, the better the potential return on your investment.
+            - Longer investment horizons generally give more time for returns to accumulate.
+            - The 'Potential Return' is directly linked to your investment and expected ROI.
+        """)
 
 # Policy Recommendation
 def recommend_policy(user_investment, investment_duration, policy_data, spending_model, label_encoder):
