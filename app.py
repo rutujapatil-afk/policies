@@ -102,12 +102,13 @@ def visualize_spending_categories(monthly_spending):
     plt.ylabel("Spending Category", fontsize=14)
     st.pyplot(plt)
 
-def visualize_roi_box(policy_data):
+def visualize_roi_bar(policy_data):
     plt.figure(figsize=(10, 6))
-    sns.boxplot(data=policy_data, x='ROI Category', y='Expected ROI', palette='Set2')
-    plt.title("Expected ROI Distribution by Policy Category", fontsize=16, weight='bold')
+    avg_roi = policy_data.groupby('ROI Category')['Expected ROI'].mean().reset_index()
+    sns.barplot(data=avg_roi, x='ROI Category', y='Expected ROI', palette='Blues')
+    plt.title("Average Expected ROI by Policy Category", fontsize=16, weight='bold')
     plt.xlabel("ROI Category", fontsize=14)
-    plt.ylabel("Expected ROI (%)", fontsize=14)
+    plt.ylabel("Average Expected ROI (%)", fontsize=14)
     st.pyplot(plt)
 
 
@@ -186,7 +187,7 @@ def main():
         # Visualizations
         visualize_monthly_spending_trend(monthly_spending)
         visualize_spending_categories(monthly_spending)
-        visualize_roi_box(policy_data)
+        visualize_roi_bar(policy_data)
 
     if st.button("Show Model Efficiency"):
         st.subheader("Model Efficiency")
