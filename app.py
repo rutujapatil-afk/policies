@@ -41,17 +41,17 @@ def preprocess_data(spending_data, policy_data):
         policy_data['ROI Category'] = pd.cut(policy_data['Expected ROI'], bins=[0, 5, 10, 15, np.inf], labels=['Low', 'Medium', 'High', 'Very High'])
     else:
         st.error("Column 'Expected ROI' is missing from policy data.")
-        return None, None
+        return None, None, None
 
     if 'Investment Horizon' in policy_data.columns:
         policy_data['Investment Horizon'] = policy_data['Investment Horizon'].str.extract(r'(\d+)', expand=False).astype(float)
     else:
         st.error("Column 'Investment Horizon' is missing from policy data.")
-        return None, None
+        return None, None, None
 
-    return monthly_spending, policy_data
+    return monthly_spending, policy_data, le
 
-monthly_spending, policy_data = preprocess_data(spending_data, policy_data)
+monthly_spending, policy_data, le = preprocess_data(spending_data, policy_data)
 
 # Train Models and Evaluate Efficiency
 def train_models(monthly_spending, policy_data):
@@ -176,7 +176,6 @@ def get_user_input():
             st.session_state['investment_duration'] = investment_duration
     return st.session_state.get('monthly_investment'), st.session_state.get('investment_duration')
 
-# Main Function
 # Main Function
 def main():
     user_investment, investment_duration = get_user_input()
