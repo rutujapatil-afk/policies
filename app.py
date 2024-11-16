@@ -129,7 +129,8 @@ def visualize_policy_comparison(top_policies):
         st.pyplot(plt)
 
 # Policy Recommendation
-def recommend_policy(user_investment, investment_duration, policy_data, spending_model):
+# Policy Recommendation
+def recommend_policy(user_investment, investment_duration, policy_data, spending_model, label_encoder):
     user_spending = np.array([[user_investment]])
     predicted_category = spending_model.predict(user_spending)[0]
     st.write(f"Predicted Spending Category: {predicted_category}")
@@ -151,8 +152,12 @@ def recommend_policy(user_investment, investment_duration, policy_data, spending
 
         # Select one best policy and print its details
         best_policy = top_policies.iloc[0]
+
+        # Use inverse_transform to get the policy name from encoded 'Policy Type'
+        policy_name = label_encoder.inverse_transform([best_policy['Policy Type']])[0]
+
         st.subheader("Recommended Policy for You:")
-        st.write(f"**Policy Type:** {best_policy['Policy Type']}")
+        st.write(f"**Policy Type:** {policy_name}")
         st.write(f"**Expected ROI:** {best_policy['Expected ROI']:.2f}%")
         st.write(f"**Investment Horizon:** {best_policy['Investment Horizon']:.1f} years")
         st.write(f"**Minimum Investment:** ${best_policy['Minimum Investment']:.2f}")
@@ -173,10 +178,11 @@ def get_user_input():
     return st.session_state.get('monthly_investment'), st.session_state.get('investment_duration')
 
 # Main Function
+# Main Function
 def main():
     user_investment, investment_duration = get_user_input()
     if user_investment and investment_duration:
-        recommend_policy(user_investment, investment_duration, policy_data, model_spending)
+        recommend_policy(user_investment, investment_duration, policy_data, model_spending, le)  # Pass the label_encoder `le`
 
         # Visualizations
         visualize_monthly_spending_trend(monthly_spending)
