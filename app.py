@@ -148,6 +148,15 @@ def recommend_policy(user_investment, investment_duration, policy_data, spending
 
         st.subheader("Top 3 Recommended Policies:")
         visualize_policy_comparison(top_policies)
+
+        # Select one best policy and print its details
+        best_policy = top_policies.iloc[0]
+        st.subheader("Recommended Policy for You:")
+        st.write(f"**Policy Type:** {best_policy['Policy Type']}")
+        st.write(f"**Expected ROI:** {best_policy['Expected ROI']:.2f}%")
+        st.write(f"**Investment Horizon:** {best_policy['Investment Horizon']:.1f} years")
+        st.write(f"**Minimum Investment:** ${best_policy['Minimum Investment']:.2f}")
+        st.write(f"**Potential Return:** ${best_policy['Potential Return ($)']:.2f}")
     else:
         st.write("No suitable policies found for your spending category.")
 
