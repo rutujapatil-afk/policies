@@ -102,13 +102,14 @@ def visualize_spending_categories(monthly_spending):
     plt.ylabel("Spending Category", fontsize=14)
     st.pyplot(plt)
 
-def visualize_roi_violin(policy_data):
+def visualize_roi_box(policy_data):
     plt.figure(figsize=(10, 6))
-    sns.violinplot(data=policy_data, x='ROI Category', y='Expected ROI', palette='pastel', inner='quartile')
+    sns.boxplot(data=policy_data, x='ROI Category', y='Expected ROI', palette='Set2')
     plt.title("Expected ROI Distribution by Policy Category", fontsize=16, weight='bold')
     plt.xlabel("ROI Category", fontsize=14)
     plt.ylabel("Expected ROI (%)", fontsize=14)
     st.pyplot(plt)
+
 
 def visualize_policy_comparison(top_policies):
     if not top_policies.empty:
@@ -185,7 +186,7 @@ def main():
         # Visualizations
         visualize_monthly_spending_trend(monthly_spending)
         visualize_spending_categories(monthly_spending)
-        visualize_roi_violin(policy_data)
+        visualize_roi_box(policy_data)
 
     if st.button("Show Model Efficiency"):
         st.subheader("Model Efficiency")
