@@ -43,7 +43,6 @@ def preprocess_data(spending_data, policy_data):
         st.error("Column 'Expected ROI' is missing from policy data.")
         return None, None
 
-    # Clean 'Investment Horizon' column
     if 'Investment Horizon' in policy_data.columns:
         policy_data['Investment Horizon'] = policy_data['Investment Horizon'].str.extract(r'(\d+)', expand=False).astype(float)
     else:
@@ -52,8 +51,36 @@ def preprocess_data(spending_data, policy_data):
 
     return monthly_spending, policy_data
 
-
 monthly_spending, policy_data = preprocess_data(spending_data, policy_data)
+
+# Train Models and Evaluate Efficiency
+def train_models(monthly_spending, policy_data):
+    # Spending Prediction Model
+    X_spending = monthly_spending[['Month']]
+    y_spending = monthly_spending['Spending Category']
+    X_train_s, X_test_s, y_train_s, y_test_s = train_test_split(X_spending, y_spending, test_size=0.2, random_state=42)
+    model_spending = RandomForestClassifier(random_state=42)
+    model_spending.fit(X_train_s, y_train_s)
+    acc_spending = accuracy_score(y_test_s, model_spending.predict(X_test_s))
+
+    # Policy Prediction Model
+    X_policy = policy_data[['Policy Type', 'Expected ROI', 'Investment Horizon', 'Minimum Investment']]
+    X_policy = pd.get_dummies(X_policy, drop_first=True)
+    y_policy = policy_data['ROI Category']
+    X_train_p, X_test_p, y_train_p, y_test_p = train_test_split(X_policy, y_policy, test_size=0.2, random_state=42)
+    model_policy = RandomForestClassifier(random_state=42)
+    model_policy.fit(X_train_p, y_train_p)
+    acc_policy = accuracy_score(y_test_p, model_policy.predict(X_test_p))
+
+    efficiency_metrics = {
+        "Spending Prediction Accuracy": acc_spending * 100,
+        "Policy Prediction Accuracy": acc_policy * 100,
+        "Classification Report for Policies": classification_report(y_test_p, model_policy.predict(X_test_p))
+    }
+
+    return model_spending, model_policy, efficiency_metrics
+
+model_spending, model_policy, efficiency_metrics = train_models(monthly_spending, policy_data)
 
 # Visualization Functions
 def visualize_monthly_spending_trend(monthly_spending):
@@ -102,42 +129,6 @@ def visualize_policy_comparison(top_policies):
         plt.legend()
         st.pyplot(plt)
 
-def visualize_simplified_correlation(policy_data):
-    key_columns = ['Expected ROI', 'Minimum Investment', 'Investment Horizon']
-    numeric_data = policy_data[key_columns].corr()
-
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(numeric_data, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
-    plt.title("Key Policy Metrics Correlation", fontsize=16, weight='bold')
-    st.pyplot(plt)
-
-# Train Models and Evaluate Efficiency
-def train_models(monthly_spending, policy_data):
-    X_spending = monthly_spending[['Month']]
-    y_spending = monthly_spending['Spending Category']
-    X_train_s, X_test_s, y_train_s, y_test_s = train_test_split(X_spending, y_spending, test_size=0.2, random_state=42)
-    model_spending = RandomForestClassifier(random_state=42)
-    model_spending.fit(X_train_s, y_train_s)
-    acc_spending = accuracy_score(y_test_s, model_spending.predict(X_test_s))
-
-    X_policy = policy_data[['Policy Type', 'Expected ROI', 'Investment Horizon', 'Minimum Investment']]
-    X_policy = pd.get_dummies(X_policy, drop_first=True)
-    y_policy = policy_data['ROI Category']
-    X_train_p, X_test_p, y_train_p, y_test_p = train_test_split(X_policy, y_policy, test_size=0.2, random_state=42)
-    model_policy = RandomForestClassifier(random_state=42)
-    model_policy.fit(X_train_p, y_train_p)
-    acc_policy = accuracy_score(y_test_p, model_policy.predict(X_test_p))
-
-    st.subheader("Model Efficiency")
-    st.write(f"Spending Prediction Accuracy: {acc_spending * 100:.2f}%")
-    st.write(f"Policy Prediction Accuracy: {acc_policy * 100:.2f}%")
-    st.write("Classification Report for Policies:")
-    st.text(classification_report(y_test_p, model_policy.predict(X_test_p)))
-
-    return model_spending, model_policy
-
-model_spending, model_policy = train_models(monthly_spending, policy_data)
-
 # Policy Recommendation
 def recommend_policy(user_investment, investment_duration, policy_data, spending_model):
     user_spending = np.array([[user_investment]])
@@ -183,6 +174,16 @@ def main():
         visualize_monthly_spending_trend(monthly_spending)
         visualize_spending_categories(monthly_spending)
         visualize_roi_violin(policy_data)
-        visualize_simplified_correlation(policy_data)
+
+    if st.button("Show Model Efficiency"):
+        st.subheader("Model Efficiency")
+        st.write(f"Spending Prediction Accuracy: {efficiency_metrics['Spending Prediction Accuracy']:.2f}%")
+        st.write(f"Policy Prediction Accuracy: {efficiency_metrics['Policy Prediction Accuracy']:.2f}%")
+
+        # Parse and display the classification report
+        st.write("Classification Report for Policies:")
+        report_dict = classification_report(y_test_p, model_policy.predict(X_test_p), output_dict=True)
+        report_df = pd.DataFrame(report_dict).transpose()
+        st.table(report_df)
 
 main()
