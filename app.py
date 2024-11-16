@@ -26,30 +26,32 @@ def preprocess_data(spending_data, policy_data):
     spending_data['Date'] = pd.to_datetime(spending_data['Date'])
     monthly_spending = spending_data.groupby(spending_data['Date'].dt.to_period("M"))['Amount'].sum().reset_index()
     monthly_spending.rename(columns={'Amount': 'Monthly Expense ($)', 'Date': 'Month'}, inplace=True)
+
     monthly_spending['Month'] = monthly_spending['Month'].dt.year * 100 + monthly_spending['Month'].dt.month
     monthly_spending['Monthly Expense ($)'] = pd.to_numeric(monthly_spending['Monthly Expense ($)'], errors='coerce')
-    monthly_spending.dropna(subset=['Monthly Expense ($)'], inplace=True)
+    monthly_spending = monthly_spending.dropna(subset=['Monthly Expense ($)'])
     monthly_spending['Spending Category'] = pd.cut(monthly_spending['Monthly Expense ($)'],
-                                                   bins=[0, 500, 1500, np.inf],
-                                                   labels=['Low', 'Medium', 'High'])
+                                                    bins=[0, 500, 1500, np.inf],
+                                                    labels=['Low', 'Medium', 'High'])
+
     le = LabelEncoder()
     policy_data['Policy Type'] = le.fit_transform(policy_data['Policy Type'])
 
     if 'Expected ROI' in policy_data.columns:
-        policy_data['ROI Category'] = pd.cut(policy_data['Expected ROI'], 
-                                             bins=[0, 5, 10, 15, np.inf], 
-                                             labels=['Low', 'Medium', 'High', 'Very High'])
+        policy_data['ROI Category'] = pd.cut(policy_data['Expected ROI'], bins=[0, 5, 10, 15, np.inf], labels=['Low', 'Medium', 'High', 'Very High'])
     else:
         st.error("Column 'Expected ROI' is missing from policy data.")
         return None, None
 
-    required_columns = ['Policy Type', 'Expected ROI', 'Investment Horizon', 'Minimum Investment']
-    missing_columns = [col for col in required_columns if col not in policy_data.columns]
-    if missing_columns:
-        st.error(f"Missing columns: {', '.join(missing_columns)}")
+    # Clean 'Investment Horizon' column
+    if 'Investment Horizon' in policy_data.columns:
+        policy_data['Investment Horizon'] = policy_data['Investment Horizon'].str.extract(r'(\d+)', expand=False).astype(float)
+    else:
+        st.error("Column 'Investment Horizon' is missing from policy data.")
         return None, None
 
     return monthly_spending, policy_data
+
 
 monthly_spending, policy_data = preprocess_data(spending_data, policy_data)
 
