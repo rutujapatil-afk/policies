@@ -75,12 +75,11 @@ def train_models(monthly_spending, policy_data):
     efficiency_metrics = {
         "Spending Prediction Accuracy": acc_spending * 100,
         "Policy Prediction Accuracy": acc_policy * 100,
-        "Classification Report for Policies": classification_report(y_test_p, model_policy.predict(X_test_p))
     }
 
-    return model_spending, model_policy, efficiency_metrics
+    return model_spending, model_policy, efficiency_metrics, X_test_p, y_test_p
 
-model_spending, model_policy, efficiency_metrics = train_models(monthly_spending, policy_data)
+model_spending, model_policy, efficiency_metrics, X_test_p, y_test_p = train_models(monthly_spending, policy_data)
 
 # Visualization Functions
 def visualize_monthly_spending_trend(monthly_spending):
