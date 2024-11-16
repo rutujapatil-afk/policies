@@ -185,70 +185,50 @@ def visualize_policy_comparison(top_policies):
 def recommend_policy(user_investment, investment_duration, policy_data, spending_model, label_encoder):
     user_spending = np.array([[user_investment]])
     predicted_category = spending_model.predict(user_spending)[0]
-    st.write(f"Predicted Spending Category: {predicted_category}")
+    st.write(f"Predicted Spending Category for Your Investment: {predicted_category}")
 
-    if predicted_category == 'Low':
-        suitable_policies = policy_data[policy_data['ROI Category'] == 'Low']
-    elif predicted_category == 'Medium':
-        suitable_policies = policy_data[policy_data['ROI Category'] != 'Very High']
-    else:
-        suitable_policies = policy_data[policy_data['ROI Category'] == 'High']
+    recommended_policies = policy_data[policy_data['Investment Horizon'] <= investment_duration]
+    st.write("Recommended Policies based on your duration:")
+    st.dataframe(recommended_policies)
 
-    if not suitable_policies.empty:
-        suitable_policies = suitable_policies.copy()
-        suitable_policies['Potential Return ($)'] = (user_investment * investment_duration) * (suitable_policies['Expected ROI'] / 100)
-        top_policies = suitable_policies.nlargest(3, 'Potential Return ($)')
+# Streamlit Application Layout
+st.set_page_config(page_title="Investment and Spending Analysis", layout="wide")
 
-        st.subheader("Top 3 Recommended Policies:")
-        visualize_policy_comparison(top_policies)
+st.title("Investment and Spending Analysis")
 
-        # Select one best policy and print its details
-        best_policy = top_policies.iloc[0]
+# Model Efficiency Button and Explanation
+if st.button("Show Model Efficiency"):
+    st.subheader("Model Efficiency Details")
+    st.write(efficiency_metrics)
 
-        # Use inverse_transform to get the policy name from encoded 'Policy Type'
-        policy_name = label_encoder.inverse_transform([best_policy['Policy Type']])[0]
+    st.write("""
+        **Explanation of Model Efficiency Data:**
+        - **Spending Prediction Accuracy:** This metric represents the accuracy of the model in predicting 
+          the spending category for each month. A higher percentage indicates that the model correctly 
+          classified the spending category for most of the test data.
+        - **Policy Prediction Accuracy:** This metric measures how accurately the model classifies policy 
+          categories based on the expected ROI, investment horizon, and other features. A higher accuracy 
+          indicates better performance in recommending policies.
+    """)
 
-        st.subheader("Recommended Policy for You:")
-        st.write(f"**Policy Type:** {policy_name}")
-        st.write(f"**Expected ROI:** {best_policy['Expected ROI']:.2f}%")
-        st.write(f"**Investment Horizon:** {best_policy['Investment Horizon']:.1f} years")
-        st.write(f"**Minimum Investment:** ${best_policy['Minimum Investment']:.2f}")
-        st.write(f"**Potential Return:** ${best_policy['Potential Return ($)']:.2f}")
-    else:
-        st.write("No suitable policies found for your spending category.")
+# Visualizations and Recommendations
+if st.checkbox("Visualize Monthly Spending Trend"):
+    visualize_monthly_spending_trend(monthly_spending)
 
-# User Input for Investment
-def get_user_input():
-    st.header("Enter Your Investment Details")
-    with st.form(key='investment_form'):
-        monthly_investment = st.number_input("Enter your monthly investment amount ($):", min_value=0.0, value=100.0, step=10.0)
-        investment_duration = st.number_input("Enter your investment duration (in months):", min_value=1, max_value=600, value=12)
-        submit_button = st.form_submit_button(label='Submit Investment')
-        if submit_button:
-            st.session_state['monthly_investment'] = monthly_investment
-            st.session_state['investment_duration'] = investment_duration
-    return st.session_state.get('monthly_investment'), st.session_state.get('investment_duration')
+if st.checkbox("Visualize Spending Categories"):
+    visualize_spending_categories(monthly_spending)
 
-# Main Function
-def main():
-    user_investment, investment_duration = get_user_input()
-    if user_investment and investment_duration:
-        recommend_policy(user_investment, investment_duration, policy_data, model_spending, le)  # Pass the label_encoder `le`
+if st.checkbox("Visualize ROI by Policy Category"):
+    visualize_roi_bar(policy_data)
 
-        # Visualizations
-        visualize_monthly_spending_trend(monthly_spending)
-        visualize_spending_categories(monthly_spending)
-        visualize_roi_bar(policy_data)
+if st.checkbox("Visualize Top Policies Comparison"):
+    top_policies = policy_data.nlargest(3, 'Expected ROI')  # Choose top 3 policies by Expected ROI
+    visualize_policy_comparison(top_policies)
 
-    if st.button("Show Model Efficiency"):
-        st.subheader("Model Efficiency")
-        st.write(f"Spending Prediction Accuracy: {efficiency_metrics['Spending Prediction Accuracy']:.2f}%")
-        st.write(f"Policy Prediction Accuracy: {efficiency_metrics['Policy Prediction Accuracy']:.2f}%")
+# User Input and Recommendation
+st.subheader("Policy Recommendation Based on Your Investment")
+user_investment = st.number_input("Enter Your Investment Amount ($):", min_value=0.0)
+investment_duration = st.number_input("Enter Investment Duration (years):", min_value=1.0)
 
-        # Parse and display the classification report
-        st.write("Classification Report for Policies:")
-        report_dict = classification_report(y_test_p, model_policy.predict(X_test_p), output_dict=True)
-        report_df = pd.DataFrame(report_dict).transpose()
-        st.table(report_df)
-
-main()
+if user_investment > 0 and investment_duration > 0:
+    recommend_policy(user_investment, investment_duration, policy_data, model_spending, le)
